@@ -50,6 +50,9 @@ class Cart extends Component {
 
   constructor(renderHookId) {
     super(renderHookId, false);
+    this.orderProducts = () => {
+      console.log(this.items)
+    }
     this.init();
   }
 
@@ -62,7 +65,6 @@ class Cart extends Component {
 
   addToCart(product) {
     this.items.push(product);
-    console.log(this.items);
     this.cartValue.innerHTML = `<h2>Total ${this.totalAmount.toFixed(2)}</h2>`;
   }
 
@@ -75,6 +77,9 @@ class Cart extends Component {
     `;
 
     this.cartValue = cart.querySelector("h2");
+
+    const button = cart.querySelector("button")
+    button.addEventListener("click", this.orderProducts)
   }
 }
 
@@ -83,7 +88,7 @@ class ProductsListItem extends Component {
     super(renderHookId, false);
     this.product = product;
     this.renderHookId = renderHookId;
-    this.init()
+    this.init();
   }
 
   addProductToCart() {
@@ -111,15 +116,19 @@ class ProductsListItem extends Component {
 }
 
 class ProductsList extends Component {
+  #products;
+  #fetchedProducts
+
   constructor(renderHookId) {
-    super(renderHookId, true);
+    super(renderHookId, false);
     this.renderHookId = renderHookId;
-    this.fetchProducts();
+    this.#fetchProducts();
+    this.init();
     this.initProducts();
   }
 
-  fetchProducts() {
-    this.products = [
+  #fetchProducts() {
+    this.#products = [
       new Product(
         "Heading",
         "https://en.wikipedia.org/wiki/Cinematography#/media/File:Arri_Alexa_camera.jpg",
@@ -148,7 +157,7 @@ class ProductsList extends Component {
   }
 
   initProducts() {
-    for (let product of this.products) {
+    for (let product of this.#products) {
       new ProductsListItem(product, this.productsList.id);
     }
   }
