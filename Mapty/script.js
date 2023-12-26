@@ -11,46 +11,61 @@ const inputDuration = document.querySelector('.form__input--duration');
 const inputCadence = document.querySelector('.form__input--cadence');
 const inputElevation = document.querySelector('.form__input--elevation');
 
-let map;
-let marker;
-let mapEvent;
+class App {
+  #map;
+  #mapEvent;
 
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(function (data) {
-    const userCoordsSnapshot = [data.coords.latitude, data.coords.longitude];
+  constructor() {
+    this._getPosition();
+    form.addEventListener('submit', this._newWorkout.bind(this));
+    inputType.addEventListener('change', this._toggleElevationField());
+  }
 
-    map = L.map('map').setView(userCoordsSnapshot, 13);
+  _getPosition() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), console.warn);
+    }
+  }
+
+  _loadMap(position) {
+    const userCoordsSnapshot = [position.coords.latitude, position.coords.longitude];
+
+    this.#map = L.map('map').setView(userCoordsSnapshot, 13);
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(this.#map);
 
-    marker = L.marker(userCoordsSnapshot)
-      .addTo(map)
-      .bindPopup('Running')
-      .openPopup();
+    this.#map.on('click', this._showForm.bind(this));
+  }
 
-    map.on('click', function (event) {
-      mapEvent = event;
-      form.classList.remove('hidden');
-      inputDistance.focus();
-    });
-  }, console.warn);
+  _showForm(event) {
+    this.#mapEvent = event;
+    form.classList.remove('hidden');
+    inputDistance.focus();
+  }
+
+  _toggleElevationField() {
+    inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
+    inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+  }
+
+  _newWorkout(event) {
+    event.preventDefault();
+
+    L.marker([this.#mapEvent.latlng.lat, this.#mapEvent.latlng.lng], {
+      opacity: 0.85,
+    })
+      .addTo(this.#map)
+      .bindPopup('Running');
+
+    L.popup({ autoClose: false });
+
+    resetActivityFormInputs();
+  }
 }
 
-form.addEventListener('submit', event => {
-  event.preventDefault();
-
-  L.marker([mapEvent.latlng.lat, mapEvent.latlng.lng], {
-    opacity: 0.85,
-  })
-    .addTo(map)
-    .bindPopup('Running');
-  L.popup({ autoClose: false });
-
-  resetActivityFormInputs();
-});
+const app = new App();
 
 const EMPTY_INPUT = '';
 
@@ -61,8 +76,3 @@ function resetActivityFormInputs() {
 function clearInputs(...inputs) {
   inputs.forEach(input => (input.value = EMPTY_INPUT));
 }
-
-inputType.addEventListener('change', event => {
-  inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
-  inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
-});
