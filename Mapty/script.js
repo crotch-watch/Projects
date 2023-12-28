@@ -68,6 +68,7 @@ class App {
 
   constructor() {
     this._getPosition();
+    this._getLocalStorage();
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
     containerWorkouts.addEventListener('click', this._moveToMap.bind(this));
@@ -75,7 +76,16 @@ class App {
 
   _getPosition() {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), console.warn);
+      navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), alert);
+    }
+  }
+
+  _availWorkoutsLocalStorage() {
+    if (this.workouts.length) {
+      this.workouts.forEach(workout => {
+        this._renderWorkout(workout);
+        this._renderWorkoutMarker(workout);
+      });
     }
   }
 
@@ -83,6 +93,7 @@ class App {
     const userCoordsSnapshot = [position.coords.latitude, position.coords.longitude];
 
     this.#map = L.map('map').setView(userCoordsSnapshot, this.DEFAULT_ZOOM_LEVEL);
+    this._availWorkoutsLocalStorage();
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -131,11 +142,12 @@ class App {
       workout = new Cycling([this.#mapEvent.latlng.lat, this.#mapEvent.latlng.lng], distance, duration, elevation);
     }
 
+    resetActivityFormInputs();
     this._hideForm();
     this.workouts.push(workout);
     this._renderWorkoutMarker(workout);
     this._renderWorkout(workout);
-    resetActivityFormInputs();
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -215,6 +227,20 @@ class App {
       animate: true,
       duration: 1,
     });
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.workouts));
+  }
+
+  _getLocalStorage() {
+    const workoutsLocalStorage = JSON.parse(localStorage.getItem('workouts'));
+    if (workoutsLocalStorage) this.workouts = workoutsLocalStorage;
+  }
+
+  resetLocalStorage() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
