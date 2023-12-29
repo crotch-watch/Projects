@@ -1,87 +1,63 @@
-class DOMHelper {
-  static clearEventListeners(element) {
-    const clonedElement = element.cloneNode(true);
-    element.replaceWith(clonedElement);
-    return clonedElement;
-  }
-
-  static moveElement(elementId, newDestinationSelector) {
-    const element = document.getElementById(elementId);
-    const destinationElement = document.querySelector(newDestinationSelector);
-    destinationElement.append(element);
-  }
-}
-
 class Tooltip {}
 
 class ProjectItem {
-  constructor(id, updateProjectListsFunction, type) {
-    this.id = id;
-    this.updateProjectListsHandler = updateProjectListsFunction;
-    this.connectMoreInfoButton();
-    this.connectSwitchButton(type);
+  #id;
+  #status;
+  #item;
+  constructor(item, status) {
+    this.#item = item;
+    this.#status = status;
+    this.#id = this.#item.id;
+    this.#switchProjectStatus();
   }
-
-  connectMoreInfoButton() {}
-
-  connectSwitchButton(type) {
-    const projectItemElement = document.getElementById(this.id);
-    let switchBtn = projectItemElement.querySelector('button:last-of-type');
-    switchBtn = DOMHelper.clearEventListeners(switchBtn);
-    switchBtn.textContent = type === 'active' ? 'Finish' : 'Activate';
-    switchBtn.addEventListener(
-      'click',
-      this.updateProjectListsHandler.bind(null, this.id)
-    );
-  }
-
-  update(updateProjectListsFn, type) {
-    this.updateProjectListsHandler = updateProjectListsFn;
-    this.connectSwitchButton(type);
+  #switchProjectStatus() {
+    this.#item
+      .querySelector("button:last-of-type")
+      .addEventListener("click", console.log);
   }
 }
 
 class ProjectList {
-  projects = [];
-
+  #type;
+  #projects = [];
+  #ELEMENT_ID_SUFFIX = "-projects";
+  #elementId;
+  #DELETE_COUNT = 1;
+  switchProjectHandler;
   constructor(type) {
-    this.type = type;
-    const prjItems = document.querySelectorAll(`#${type}-projects li`);
-    for (const prjItem of prjItems) {
-      this.projects.push(
-        new ProjectItem(prjItem.id, this.switchProject.bind(this), this.type)
-      );
-    }
-    console.log(this.projects);
+    this.#type = type;
+    this.#elementId = this.#type + this.#ELEMENT_ID_SUFFIX;
+    this.#getProjectsFromDOM();
   }
-
-  setSwitchHandlerFunction(switchHandlerFunction) {
-    this.switchHandler = switchHandlerFunction;
+  #getProjectsFromDOM() {
+    const list = document.querySelectorAll(`#${this.#elementId} li`);
+    if (!list.length) return;
+    list.forEach((item) =>
+      this.#projects.push(new ProjectItem(item, this.#type))
+    );
   }
-
-  addProject(project) {
-    this.projects.push(project);
-    DOMHelper.moveElement(project.id, `#${this.type}-projects ul`);
-    project.update(this.switchProject.bind(this), this.type);
+  switchProject(id) {
+    const startIndex = this.#projects.findIndex((project) => project.id === id);
+    const [switchThisProject] = this.#projects.splice(
+      startIndex,
+      this.#DELETE_COUNT
+    );
+    this.switchProjectHandler();
   }
-
-  switchProject(projectId) {
-    // const projectIndex = this.projects.findIndex(p => p.id === projectId);
-    // this.projects.splice(projectIndex, 1);
-    this.switchHandler(this.projects.find(p => p.id === projectId));
-    this.projects = this.projects.filter(p => p.id !== projectId);
+  setSwitchProjectHandler(callbackFn) {
+    this.switchProjectHandler(callbackFn);
   }
 }
 
 class App {
   static init() {
-    const activeProjectsList = new ProjectList('active');
-    const finishedProjectsList = new ProjectList('finished');
-    activeProjectsList.setSwitchHandlerFunction(
-      finishedProjectsList.addProject.bind(finishedProjectsList)
+    const activeProjects = new ProjectList("active");
+    const finishedProjects = new ProjectList("finished");
+    activeProjects.setSwitchProjectHandler(
+      finishedProjects.switchProject.bind(finishedProjects)
     );
-    finishedProjectsList.setSwitchHandlerFunction(
-      activeProjectsList.addProject.bind(activeProjectsList)
+    finishedProjects.setSwitchProjectHandler(
+      activeProjects.switchProject.bind(finishedProjects)
     );
   }
 }
