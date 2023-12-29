@@ -64,23 +64,36 @@ class App {
   #map;
   #mapEvent;
   workouts = [];
+  DEFAULT_ZOOM_LEVEL = 13;
 
   constructor() {
     this._getPosition();
+    this._getLocalStorage();
     form.addEventListener('submit', this._newWorkout.bind(this));
     inputType.addEventListener('change', this._toggleElevationField);
+    containerWorkouts.addEventListener('click', this._moveToMap.bind(this));
   }
 
   _getPosition() {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), console.warn);
+      navigator.geolocation.getCurrentPosition(this._loadMap.bind(this), alert);
+    }
+  }
+
+  _availWorkoutsLocalStorage() {
+    if (this.workouts.length) {
+      this.workouts.forEach(workout => {
+        this._renderWorkout(workout);
+        this._renderWorkoutMarker(workout);
+      });
     }
   }
 
   _loadMap(position) {
     const userCoordsSnapshot = [position.coords.latitude, position.coords.longitude];
 
-    this.#map = L.map('map').setView(userCoordsSnapshot, 13);
+    this.#map = L.map('map').setView(userCoordsSnapshot, this.DEFAULT_ZOOM_LEVEL);
+    this._availWorkoutsLocalStorage();
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -129,11 +142,12 @@ class App {
       workout = new Cycling([this.#mapEvent.latlng.lat, this.#mapEvent.latlng.lng], distance, duration, elevation);
     }
 
+    resetActivityFormInputs();
     this._hideForm();
     this.workouts.push(workout);
     this._renderWorkoutMarker(workout);
     this._renderWorkout(workout);
-    resetActivityFormInputs();
+    this._setLocalStorage();
   }
 
   _renderWorkoutMarker(workout) {
@@ -174,7 +188,7 @@ class App {
       html += `
           <div class="workout__details">
           <span class="workout__icon">⚡️</span>
-          <span class="workout__value">${workout.pace.toFixed(1)}</span>
+          <span class="workout__value">${parseInt(workout.pace)}</span>
           <span class="workout__unit">min/km</span>
         </div>
         <div class="workout__details">
@@ -190,7 +204,7 @@ class App {
       html += `
             <div class="workout__details">
             <span class="workout__icon">⚡️</span>
-            <span class="workout__value">${workout.speed.toFixed(1)}</span>
+            <span class="workout__value">${parseInt(workout.speed)}</span>
             <span class="workout__unit">km/h</span>
           </div>
           <div class="workout__details">
@@ -203,6 +217,30 @@ class App {
     }
 
     form.insertAdjacentHTML('afterend', html);
+  }
+
+  _moveToMap(event) {
+    const clickedWorkout = event.target.closest('.workout');
+    if (!clickedWorkout) return;
+    const workout = this.workouts.find(workout => workout.id === +clickedWorkout.dataset.id);
+    this.#map.setView([workout.coords[0], workout.coords[1]], this.DEFAULT_ZOOM_LEVEL, {
+      animate: true,
+      duration: 1,
+    });
+  }
+
+  _setLocalStorage() {
+    localStorage.setItem('workouts', JSON.stringify(this.workouts));
+  }
+
+  _getLocalStorage() {
+    const workoutsLocalStorage = JSON.parse(localStorage.getItem('workouts'));
+    if (workoutsLocalStorage) this.workouts = workoutsLocalStorage;
+  }
+
+  resetLocalStorage() {
+    localStorage.removeItem('workouts');
+    location.reload();
   }
 }
 
