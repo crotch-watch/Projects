@@ -1,19 +1,19 @@
 class Tooltip {}
 
 class ProjectItem {
-  #id;
+  id;
   #status;
   #item;
-  constructor(item, status) {
+  #switchProjectHandler;
+  constructor(item, status, switchProjectHandler) {
     this.#item = item;
     this.#status = status;
-    this.#id = this.#item.id;
+    this.id = this.#item.id;
+    this.#switchProjectHandler = switchProjectHandler;
     this.#switchProjectStatus();
   }
   #switchProjectStatus() {
-    this.#item
-      .querySelector("button:last-of-type")
-      .addEventListener("click", console.log);
+    this.#item.querySelector("button:last-of-type").addEventListener("click", this.#switchProjectHandler);
   }
 }
 
@@ -33,32 +33,32 @@ class ProjectList {
     const list = document.querySelectorAll(`#${this.#elementId} li`);
     if (!list.length) return;
     list.forEach((item) =>
-      this.#projects.push(new ProjectItem(item, this.#type))
+      this.#projects.push(new ProjectItem(item, this.#type, this.switchProject.bind(this, item.id)))
     );
+  }
+  addProject(project) {
+    console.log(this);
   }
   switchProject(id) {
     const startIndex = this.#projects.findIndex((project) => project.id === id);
-    const [switchThisProject] = this.#projects.splice(
-      startIndex,
-      this.#DELETE_COUNT
-    );
-    this.switchProjectHandler();
+    const [removedProject] = this.#projects.splice(startIndex, this.#DELETE_COUNT);
+    this.switchProjectHandler(removedProject);
   }
   setSwitchProjectHandler(callbackFn) {
-    this.switchProjectHandler(callbackFn);
+    this.switchProjectHandler = callbackFn;
   }
 }
 
 class App {
+  static #categories = {
+    ACTIVE: "active",
+    FINISHED: "finished",
+  };
   static init() {
-    const activeProjects = new ProjectList("active");
-    const finishedProjects = new ProjectList("finished");
-    activeProjects.setSwitchProjectHandler(
-      finishedProjects.switchProject.bind(finishedProjects)
-    );
-    finishedProjects.setSwitchProjectHandler(
-      activeProjects.switchProject.bind(finishedProjects)
-    );
+    const activeProjects = new ProjectList(this.#categories.ACTIVE);
+    const finishedProjects = new ProjectList(this.#categories.FINISHED);
+    activeProjects.setSwitchProjectHandler(finishedProjects.addProject.bind(finishedProjects));
+    finishedProjects.setSwitchProjectHandler(activeProjects.addProject.bind(activeProjects));
   }
 }
 
