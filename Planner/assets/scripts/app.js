@@ -1,10 +1,32 @@
+const ACTIVE = "active";
+const FINISHED = "finished";
+
+const BUTTON_CAPTION = {
+  [ACTIVE]: "Activate",
+  [FINISHED]: "Finish",
+};
+
+class Helper {
+  static switchDOMELement(project, newDesitnationSelector) {
+    const projectElement = document.querySelector(`#${project.id}`);
+    document.querySelector(newDesitnationSelector).append(projectElement);
+  }
+  static clearListeners(element) {
+    if (!element) return element;
+    const clonedElement = element.cloneNode(true);
+    element.replaceWith(clonedElement);
+    return clonedElement;
+  }
+}
+
 class Tooltip {}
 
 class ProjectItem {
   id;
-  #status;
   #item;
   #switchProjectHandler;
+  #switchButtonSelector = "button:last-of-type";
+  #status;
   constructor(item, status, switchProjectHandler) {
     this.#item = item;
     this.#status = status;
@@ -13,7 +35,14 @@ class ProjectItem {
     this.#switchProjectStatus();
   }
   #switchProjectStatus() {
-    this.#item.querySelector("button:last-of-type").addEventListener("click", this.#switchProjectHandler);
+    this.#item = Helper.clearListeners(this.#item);
+    const switchButton = this.#item.querySelector(this.#switchButtonSelector);
+    switchButton.textContent = this.#status === ACTIVE ? BUTTON_CAPTION.finished : BUTTON_CAPTION.active;
+    switchButton.addEventListener("click", this.#switchProjectHandler.bind(null, this.id));
+  }
+  updateEffects(newSwitchProjectHandler, status) {
+    this.#switchProjectHandler = newSwitchProjectHandler;
+    this.#switchProjectStatus(status);
   }
 }
 
@@ -32,15 +61,17 @@ class ProjectList {
   #getProjectsFromDOM() {
     const list = document.querySelectorAll(`#${this.#elementId} li`);
     if (!list.length) return;
-    list.forEach((item) =>
-      this.#projects.push(new ProjectItem(item, this.#type, this.switchProject.bind(this, item.id)))
-    );
+    list.forEach((item) => this.#projects.push(new ProjectItem(item, this.#type, this.switchProject.bind(this))));
   }
   addProject(project) {
-    console.log(this);
+    project.status = this.#type;
+    this.#projects.push(project);
+    Helper.switchDOMELement(project, `#${this.#elementId} ul`);
+    project.updateEffects(this.switchProject.bind(this), this.#type);
   }
   switchProject(id) {
     const startIndex = this.#projects.findIndex((project) => project.id === id);
+    if (startIndex < 0) return;
     const [removedProject] = this.#projects.splice(startIndex, this.#DELETE_COUNT);
     this.switchProjectHandler(removedProject);
   }
@@ -50,13 +81,9 @@ class ProjectList {
 }
 
 class App {
-  static #categories = {
-    ACTIVE: "active",
-    FINISHED: "finished",
-  };
   static init() {
-    const activeProjects = new ProjectList(this.#categories.ACTIVE);
-    const finishedProjects = new ProjectList(this.#categories.FINISHED);
+    const activeProjects = new ProjectList(ACTIVE);
+    const finishedProjects = new ProjectList(FINISHED);
     activeProjects.setSwitchProjectHandler(finishedProjects.addProject.bind(finishedProjects));
     finishedProjects.setSwitchProjectHandler(activeProjects.addProject.bind(activeProjects));
   }
