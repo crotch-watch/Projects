@@ -19,20 +19,36 @@ class Helper {
   }
 }
 
-class Tooltip {}
+class Tooltip {
+  show(text) {
+    const tooltip = document.createElement("div");
+    tooltip.textContent = text || "Tooltip...";
+    document.append(tooltip);
+  }
+}
 
 class ProjectItem {
-  id;
   #item;
+  #status;
+  id;
   #switchProjectHandler;
   #switchButtonSelector = "button:last-of-type";
-  #status;
+  #showTooltip;
+  #infoButtonSelector = "button:first-of-type";
   constructor(item, status, switchProjectHandler) {
     this.#item = item;
     this.#status = status;
     this.id = this.#item.id;
     this.#switchProjectHandler = switchProjectHandler;
+    this.#showProjectInfo();
     this.#switchProjectStatus();
+  }
+  #showTooltip() {
+    const infoTooltip = new Tooltip();
+    infoTooltip.show("HENLO");
+  }
+  #showProjectInfo() {
+    this.#item.querySelector(this.#infoButtonSelector).addEventListener("click", this.#showTooltip);
   }
   #switchProjectStatus() {
     this.#item = Helper.clearListeners(this.#item);
