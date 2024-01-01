@@ -20,14 +20,17 @@ class Helper {
 }
 
 class Component {
-  host = document.body;
+  #host = document.body;
   #insertBefore;
   constructor(hostID, insertBefore = false) {
-    if (hostID) this.host = document.getElementById(hostID);
     this.#insertBefore = insertBefore;
+    if (!hostID) return;
+    let hostExists;
+    if (hostID) hostExists = document.getElementById(hostID);
+    if (hostExists) this.#host = hostExists;
   }
   attach() {
-    this.host.insertAdjacentElement(this.#insertBefore ? "afterbegin" : "beforeend", this.host);
+    this.#host.insertAdjacentElement(this.#insertBefore ? "afterbegin" : "beforeend", this.#host);
   }
   detach() {
     if (this.element) this.element.remove();
