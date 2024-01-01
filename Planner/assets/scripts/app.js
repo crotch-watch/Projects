@@ -19,11 +19,34 @@ class Helper {
   }
 }
 
-class Tooltip {
-  show(text) {
-    const tooltip = document.createElement("div");
-    tooltip.textContent = text || "Tooltip...";
-    document.append(tooltip);
+class Component {
+  host = document.body;
+  #insertBefore;
+  constructor(hostID, insertBefore = false) {
+    if (hostID) this.host = document.getElementById(hostID);
+    this.#insertBefore = insertBefore;
+  }
+  attach() {
+    this.host.insertAdjacentElement(this.#insertBefore ? "afterbegin" : "beforeend", this.host);
+  }
+  detach() {
+    if (this.element) this.element.remove();
+  }
+}
+
+class Tooltip extends Component {
+  element;
+  create(text) {
+    this.element = document.createElement("div");
+    this.element.textContent = text || "Tooltip...";
+    this.element.className = "card";
+    this.element.addEventListener("click", this.detach.bind(this));
+    this.attach();
+    return this;
+  }
+  onClosetooltip(flushEffects) {
+    flushEffects();
+    return this;
   }
 }
 
@@ -33,22 +56,29 @@ class ProjectItem {
   id;
   #switchProjectHandler;
   #switchButtonSelector = "button:last-of-type";
-  #showTooltip;
   #infoButtonSelector = "button:first-of-type";
+  #hasActiveTooltip = false;
   constructor(item, status, switchProjectHandler) {
     this.#item = item;
     this.#status = status;
     this.id = this.#item.id;
     this.#switchProjectHandler = switchProjectHandler;
-    this.#showProjectInfo();
+    this.showProjectInfo();
     this.#switchProjectStatus();
   }
-  #showTooltip() {
-    const infoTooltip = new Tooltip();
-    infoTooltip.show("HENLO");
+  flushTooltipEffects() {
+    this.#hasActiveTooltip = false;
   }
-  #showProjectInfo() {
-    this.#item.querySelector(this.#infoButtonSelector).addEventListener("click", this.#showTooltip);
+  showTooltip() {
+    if (this.#hasActiveTooltip) return;
+    const infoTooltip = new Tooltip();
+    infoTooltip.create("HELLO");
+    infoTooltip.onClosetooltip(this.flushTooltipEffects.bind(this));
+    this.#hasActiveTooltip = true;
+  }
+  showProjectInfo() {
+    const btn = this.#item.querySelector(this.#infoButtonSelector);
+    btn.addEventListener("click", this.showTooltip.bind(this));
   }
   #switchProjectStatus() {
     this.#item = Helper.clearListeners(this.#item);
