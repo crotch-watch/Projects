@@ -15,21 +15,17 @@ const timeout = function (s) {
 ///////////////////////////////////////
 
 const BASE_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
-const PIZZA_ID = '5ed6604591c37cdc054bcd09';
-
-function getURL(URL) {
-  return function (extension) {
-    return URL + extension;
-  };
-}
-
 const baseURL = getURL(BASE_URL);
-const pizzaURL = baseURL(PIZZA_ID);
+const bindWindowListener = windowEventListeners('load', 'hashchange');
+bindWindowListener(showRecipe);
 
-async function showRecipe(url) {
+async function showRecipe() {
+  const recipeID = window.location.hash.slice(1);
+  if (!recipeID) return;
+  const recipeURL = baseURL(recipeID);
   renderLoadingSpinner(recipeContainer);
   try {
-    const res = await fetch(url);
+    const res = await fetch(recipeURL);
     const data = await res.json();
     if (!res.ok) throw new Error(`\n ${data.message} (${res.status})`);
     let { recipe } = data.data;
@@ -140,8 +136,6 @@ async function showRecipe(url) {
   }
 }
 
-showRecipe(pizzaURL);
-
 function renderLoadingSpinner(parent, position, markup) {
   if (!(parent instanceof HTMLElement)) return false;
   const DEFAULT_SPINNER_MARKUP = `
@@ -160,6 +154,18 @@ function renderLoadingSpinner(parent, position, markup) {
   parent.innerHTML = '';
   parent.insertAdjacentHTML(position, markup);
   return true;
+}
+
+function getURL(URL) {
+  return function (extension) {
+    return URL + extension;
+  };
+}
+
+function windowEventListeners(...events) {
+  return function (callbackFn) {
+    events.forEach(event => window.addEventListener(event, callbackFn));
+  };
 }
 
 import icons from 'url:../img/icons.svg';
