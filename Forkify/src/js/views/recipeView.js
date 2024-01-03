@@ -8,6 +8,8 @@ class RecipeView {
       </svg>
     </div>
   `;
+  #DEFAULT_ERROR_MESSAGE = 'No recipes found for your query. Please try again!';
+  #MESSAGE = '';
   render(data) {
     this.#data = data;
     const markup = this.#generateMarkup();
@@ -120,6 +122,44 @@ class RecipeView {
     }
     this.#clearMarkup();
     this.#parent.insertAdjacentHTML(position, this.#loadingSpinner);
+  }
+  renderErrorMessage(message = this.#DEFAULT_ERROR_MESSAGE, position) {
+    const markup = `
+      <div class="error">
+        <div>
+          <svg>
+            <use href="${icons}#icon-alert-triangle"></use>
+          </svg>
+        </div>
+        <p>${message}</p>
+      </div>
+    `;
+    if (
+      !(position === 'afterbegin' || position === 'afterend' || position === 'beforebegin' || position === 'beforeend')
+    ) {
+      position = 'afterbegin';
+    }
+    this.#clearMarkup();
+    this.#parent.insertAdjacentHTML(position, markup);
+  }
+  renderMessage(message = this.#MESSAGE, position) {
+    const markup = `
+      <div class="message">
+        <div>
+          <svg>
+            <use href="${icons}#icon-smile"></use>
+          </svg>
+        </div>
+        <p>${message || this.#MESSAGE}</p>
+      </div>
+    `;
+    if (
+      !(position === 'afterbegin' || position === 'afterend' || position === 'beforebegin' || position === 'beforeend')
+    ) {
+      position = 'afterbegin';
+    }
+    this.#clearMarkup();
+    this.#parent.insertAdjacentHTML(position, markup);
   }
 }
 export default new RecipeView();

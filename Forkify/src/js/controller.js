@@ -11,8 +11,8 @@ async function controlRecipe() {
   try {
     await model.loadRecipe(recipeURL);
     recipeView.render(model.state.recipe);
-  } catch (e) {
-    alert(e);
+  } catch (error) {
+    recipeView.renderErrorMessage();
   }
 }
 
