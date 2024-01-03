@@ -14,6 +14,10 @@ class RecipeView {
     this.#clearMarkup();
     this.#parent.insertAdjacentHTML('afterbegin', markup);
   }
+  setSubscriber(subscriber) {
+    const bindWindowListener = windowEventListeners('hashchange', 'load');
+    bindWindowListener(subscriber);
+  }
   #generateMarkup() {
     return `
       <figure class="recipe__fig">
@@ -118,6 +122,6 @@ class RecipeView {
     this.#parent.insertAdjacentHTML(position, this.#loadingSpinner);
   }
 }
-
-import icons from 'url:../../img/icons.svg';
 export default new RecipeView();
+import { windowEventListeners } from '../helpers';
+import icons from 'url:../../img/icons.svg';

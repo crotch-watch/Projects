@@ -15,3 +15,13 @@ export const timeout = function (s) {
     }, s * 1000);
   });
 };
+export function windowEventListeners(...events) {
+  return function (callbackFn) {
+    events.forEach(event => window.addEventListener(event, callbackFn));
+  };
+}
+export function getURL(URL) {
+  return function (extension) {
+    return URL + extension;
+  };
+}

@@ -1,19 +1,12 @@
 // https://forkify-api.herokuapp.com/v2
 
-///////////////////////////////////////
-
-import { API_URL } from './config.js';
-const baseURL = getURL(API_URL);
-const bindWindowListener = windowEventListeners('load', 'hashchange');
-bindWindowListener(controlRecipe);
-
-import * as model from './model.js';
-import recipeView from './views/recipeView.js';
+init();
 
 async function controlRecipe() {
   const recipeID = window.location.hash.slice(1);
   if (!recipeID) return;
   recipeView.renderLoadingSpinner();
+  const baseURL = getURL(API_URL);
   const recipeURL = baseURL(recipeID);
   try {
     await model.loadRecipe(recipeURL);
@@ -23,14 +16,11 @@ async function controlRecipe() {
   }
 }
 
-function getURL(URL) {
-  return function (extension) {
-    return URL + extension;
-  };
+function init() {
+  recipeView.setSubscriber(controlRecipe);
 }
 
-function windowEventListeners(...events) {
-  return function (callbackFn) {
-    events.forEach(event => window.addEventListener(event, callbackFn));
-  };
-}
+import { API_URL } from './config.js';
+import { getURL } from './helpers.js';
+import * as model from './model.js';
+import recipeView from './views/recipeView.js';
