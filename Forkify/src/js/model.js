@@ -1,11 +1,11 @@
 export const state = {
   recipe: {},
 };
+import { REQUEST_TIMEOUT_S } from './config';
+import { parseRequest, timeout } from './helpers';
 export async function loadRecipe(recipeURL) {
   try {
-    const res = await fetch(recipeURL);
-    const data = await res.json();
-    if (!res.ok) throw new Error(`\n ${data.message} (${res.status})`);
+    const data = await Promise.race([parseRequest(recipeURL), timeout(REQUEST_TIMEOUT_S)]);
     const { recipe } = data.data;
     state.recipe = {
       id: recipe.id,
@@ -18,6 +18,6 @@ export async function loadRecipe(recipeURL) {
       ingredients: recipe.ingredients,
     };
   } catch (error) {
-    alert(error);
+    throw error;
   }
 }
