@@ -150,7 +150,7 @@ class RecipeView {
             <use href="${icons}#icon-smile"></use>
           </svg>
         </div>
-        <p>${message || this.#MESSAGE}</p>
+        <p>${message}</p>
       </div>
     `;
     if (
