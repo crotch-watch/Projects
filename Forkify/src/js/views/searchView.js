@@ -1,4 +1,4 @@
-class SearchView {
+class SearchView extends View {
   #parent = document.querySelector('form');
   #searchField = this.#parent.querySelector('.search__field');
   get searchQuery() {
@@ -16,3 +16,4 @@ class SearchView {
   }
 }
 export default new SearchView();
+import View from './View';

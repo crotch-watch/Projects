@@ -22,9 +22,12 @@ async function controlSearchResults() {
   try {
     const { searchQuery } = searchView;
     if (!searchQuery.trim().length) return;
+    resultsView.renderLoadingSpinner();
     await model.fetchSearchResults(searchQuery);
+    const searchResults = model.state.search.results;
+    resultsView.render(searchResults);
   } catch (error) {
-    console.warn(error);
+    resultsView.renderErrorMessage(error.message)
   }
 }
 
@@ -33,3 +36,8 @@ import { getURL } from './helpers.js';
 import * as model from './model.js';
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
+import resultsView from './views/resultsView.js';
+
+if(module.hot) {
+  module.hot.accept()
+}
