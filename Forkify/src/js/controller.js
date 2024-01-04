@@ -1,6 +1,9 @@
-// https://forkify-api.herokuapp.com/v2
-
 init();
+
+function init() {
+  recipeView.setSubscriber(controlRecipe);
+  searchView.setSubscriber(controlSearchResults);
+}
 
 async function controlRecipe() {
   const recipeID = window.location.hash.slice(1);
@@ -15,12 +18,18 @@ async function controlRecipe() {
     recipeView.renderErrorMessage();
   }
 }
-
-function init() {
-  recipeView.setSubscriber(controlRecipe);
+async function controlSearchResults() {
+  try {
+    const { searchQuery } = searchView;
+    if (!searchQuery.trim().length) return;
+    await model.fetchSearchResults(searchQuery);
+  } catch (error) {
+    console.warn(error);
+  }
 }
 
 import { API_URL } from './config.js';
 import { getURL } from './helpers.js';
 import * as model from './model.js';
 import recipeView from './views/recipeView.js';
+import searchView from './views/searchView.js';
