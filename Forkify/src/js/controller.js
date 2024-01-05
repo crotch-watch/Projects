@@ -3,6 +3,7 @@ init();
 function init() {
   recipeView.setSubscriber(controlRecipe);
   searchView.setSubscriber(controlSearchResults);
+  paginationView.setSubscriber(controlPagination);
 }
 
 async function controlRecipe() {
@@ -24,12 +25,17 @@ async function controlSearchResults() {
     if (!searchQuery.trim().length) return;
     resultsView.renderLoadingSpinner();
     await model.fetchSearchResults(searchQuery);
-    // const searchResults = model.state.search.results;
-    const searchResults = model.getSearchResultsPage(1)
+    const searchResults = model.getPaginatedResults();
     resultsView.render(searchResults);
+    paginationView.render(model.state.search);
   } catch (error) {
-    resultsView.renderErrorMessage(error.message)
+    resultsView.renderErrorMessage(error.message);
   }
+}
+function controlPagination(page) {
+  const paginatedResults = model.getPaginatedResults(page);
+  resultsView.render(paginatedResults);
+  paginationView.render(model.state.search);
 }
 
 import recipeView from './views/recipeView.js';
@@ -38,7 +44,8 @@ import { API_URL } from './config.js';
 import { getURL } from './helpers.js';
 import * as model from './model.js';
 import resultsView from './views/resultsView.js';
+import paginationView from './views/paginationView.js';
 
-if(module.hot) {
-  module.hot.accept()
+if (module.hot) {
+  module.hot.accept();
 }

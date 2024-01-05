@@ -69,6 +69,7 @@ export default class View {
     this._parent.insertAdjacentHTML(position, markup);
   }
   _generateMarkup() {}
+  setSubscriber() {}
 }
 
 import icons from 'url:../../img/icons.svg';

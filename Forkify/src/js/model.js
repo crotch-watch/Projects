@@ -4,7 +4,8 @@ export const state = {
     query: '',
     results: [],
     resultsPerPage: RESULTS_PER_PAGE,
-    currnetPage: INITIAL_PAGE,
+    currentPage: INITIAL_PAGE,
+    totalPages: INITIAL_TOTAL_PAGES,
   },
 };
 
@@ -41,13 +42,18 @@ export async function fetchSearchResults(searchQuery) {
     throw error;
   }
 }
-export function getSearchResultsPage(page = state.search.currnetPage) {
+export function getPaginatedResults(page = state.search.currentPage) {
   if (!Number.isFinite(page) || page < INITIAL_PAGE) return;
-  state.search.currnetPage = page;
-  const start = (page - 1) * state.search.resultsPerPage;
-  const end = page * state.search.resultsPerPage;
-  return state.search.results.slice(start, end);
+  const { search } = state;
+  const { results, resultsPerPage } = search;
+  const resultsLength = results.length;
+  if (resultsLength <= resultsPerPage) return results;
+  search.totalPages = Math.ceil(resultsLength / resultsPerPage);
+  search.currentPage = page;
+  const start = (page - 1) * resultsPerPage;
+  const end = page * resultsPerPage;
+  return results.slice(start, end);
 }
 
-import { INITIAL_PAGE, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
+import { INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
 import { parseRequest, timeout } from './helpers';
