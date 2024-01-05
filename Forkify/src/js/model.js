@@ -3,10 +3,11 @@ export const state = {
   search: {
     query: '',
     results: [],
+    resultsPerPage: RESULTS_PER_PAGE,
+    currnetPage: INITIAL_PAGE,
   },
 };
-import { REQUEST_TIMEOUT_S } from './config';
-import { parseRequest, timeout } from './helpers';
+
 export async function loadRecipe(recipeURL) {
   try {
     const data = await Promise.race([parseRequest(recipeURL), timeout(REQUEST_TIMEOUT_S)]);
@@ -40,3 +41,13 @@ export async function fetchSearchResults(searchQuery) {
     throw error;
   }
 }
+export function getSearchResultsPage(page = state.search.currnetPage) {
+  if (!Number.isFinite(page) || page < INITIAL_PAGE) return;
+  state.search.currnetPage = page;
+  const start = (page - 1) * state.search.resultsPerPage;
+  const end = page * state.search.resultsPerPage;
+  return state.search.results.slice(start, end);
+}
+
+import { INITIAL_PAGE, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
+import { parseRequest, timeout } from './helpers';

@@ -24,18 +24,19 @@ async function controlSearchResults() {
     if (!searchQuery.trim().length) return;
     resultsView.renderLoadingSpinner();
     await model.fetchSearchResults(searchQuery);
-    const searchResults = model.state.search.results;
+    // const searchResults = model.state.search.results;
+    const searchResults = model.getSearchResultsPage(1)
     resultsView.render(searchResults);
   } catch (error) {
     resultsView.renderErrorMessage(error.message)
   }
 }
 
+import recipeView from './views/recipeView.js';
+import searchView from './views/searchView.js';
 import { API_URL } from './config.js';
 import { getURL } from './helpers.js';
 import * as model from './model.js';
-import recipeView from './views/recipeView.js';
-import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js';
 
 if(module.hot) {
