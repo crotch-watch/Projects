@@ -2,6 +2,7 @@ init();
 
 function init() {
   recipeView.setSubscriber(controlRecipe);
+  recipeView.setUpdateServingsSubscriber(controlServings)
   searchView.setSubscriber(controlSearchResults);
   paginationView.setSubscriber(controlPagination);
 }
@@ -36,6 +37,10 @@ function controlPagination(page) {
   const paginatedResults = model.getPaginatedResults(page);
   resultsView.render(paginatedResults);
   paginationView.render(model.state.search);
+}
+function controlServings(servings) {
+  model.updateServingsTo(servings)
+  recipeView.render(model.state.recipe)
 }
 
 import recipeView from './views/recipeView.js';

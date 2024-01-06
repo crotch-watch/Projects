@@ -54,6 +54,13 @@ export function getPaginatedResults(page = state.search.currentPage) {
   const end = page * resultsPerPage;
   return results.slice(start, end);
 }
+export function updateServingsTo(servings) {
+  const { recipe } = state;
+  recipe.ingredients.forEach(ingredient => {
+    ingredient.quantity = (servings / recipe.servings) * ingredient.quantity;
+  });
+  recipe.servings = servings;
+}
 
 import { INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
 import { parseRequest, timeout } from './helpers';
