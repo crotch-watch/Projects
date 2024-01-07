@@ -11,6 +11,7 @@ async function controlRecipe() {
   const recipeID = window.location.hash.slice(1);
   if (!recipeID) return;
   recipeView.renderLoadingSpinner();
+  resultsView.update(model.getPaginatedResults())
   const baseURL = getURL(API_URL);
   const recipeURL = baseURL(recipeID);
   try {
@@ -40,7 +41,8 @@ function controlPagination(page) {
 }
 function controlServings(servings) {
   model.updateServingsTo(servings)
-  recipeView.render(model.state.recipe)
+  recipeView.update(model.state.recipe)
+
 }
 
 import recipeView from './views/recipeView.js';

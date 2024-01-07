@@ -1,6 +1,6 @@
 export default class View {
   static icons = icons;
-  _data;
+  _data = [];
   _parent;
   _loadingSpinner = `
     <div class="spinner">
@@ -17,6 +17,26 @@ export default class View {
     this._clearMarkup();
     const markup = this._generateMarkup();
     this._parent.insertAdjacentHTML('afterbegin', markup);
+  }
+  update(data) {
+    if (!this._data.length) return;
+    this._data = data;
+    const newMarkup = this._generateMarkup();
+    const newElement = document.createRange().createContextualFragment(newMarkup);
+    const newElementSubElements = Array.from(newElement.querySelectorAll('*'));
+    const currentElement = Array.from(this._parent.querySelectorAll('*'));
+    newElementSubElements.forEach((subElement, index) => {
+      const currentSubElement = currentElement[index];
+      const areNodesEqual = subElement.isEqualNode(currentSubElement);
+      if (!areNodesEqual && subElement.firstChild().nodeValue.trim() !== '') {
+        currentSubElement.textContent = subElement.textContent;
+      }
+      if (!areNodesEqual) {
+        Array.from(subElement.attributes).forEach(attribute =>
+          currentSubElement.setAttributes(attribute.name, attribute.value)
+        );
+      }
+    });
   }
   renderLoadingSpinner(position) {
     if (

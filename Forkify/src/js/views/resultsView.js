@@ -4,9 +4,11 @@ class ResultsView extends View {
     return this._data.map(this._generateSinglePreview);
   }
   _generateSinglePreview(result) {
+    const id = window.location.hash.slice(1);
+    const isLinkActive = result.id === id;
     return `
         <li class="preview">
-          <a class="preview__link" href="#${result.id}">
+          <a class="preview__link" ${isLinkActive ? 'preview__link--active' : ''} href="#${result.id}">
             <figure class="preview__fig">
               <img src="${result.image}" alt="${result.title}" />
             </figure>
