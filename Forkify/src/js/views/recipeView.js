@@ -13,6 +13,21 @@ class RecipeView extends View {
       UpdateServingsSubscriber(+updateServingsTo);
     });
   }
+  setAddBookmarkSubscriber(addBookmarkSubscriber) {
+    this._parent.addEventListener('click', clickEvent => {
+      const bookmarkButton = clickEvent.target.closest('.btn--bookmark');
+      if (!bookmarkButton) return;
+      addBookmarkSubscriber();
+    });
+  }
+  setRemoveBookmarkSubscriber() {
+    this._parent.addEventListener('click', clickEvent => {
+      const bookmarkButton = clickEvent.target.closest('.btn--bookmark');
+      
+      if (!bookmarkButton) return;
+      addBookmarkSubscriber();
+    });
+  }
   _generateMarkup() {
     return `
       <figure class="recipe__fig">
@@ -53,9 +68,9 @@ class RecipeView extends View {
 
       <div class="recipe__user-generated">
       </div>
-      <button class="btn--round">
+      <button class="btn--round btn--bookmark">
         <svg class="">
-          <use href="${View.icons}#icon-bookmark-fill"></use>
+          <use href="${View.icons}#icon-bookmark"></use>
         </svg>
       </button>
     </div>

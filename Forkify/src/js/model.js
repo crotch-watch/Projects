@@ -7,12 +7,14 @@ export const state = {
     currentPage: INITIAL_PAGE,
     totalPages: INITIAL_TOTAL_PAGES,
   },
+  bookmarks: [],
 };
 
 export async function loadRecipe(recipeURL) {
   try {
     const data = await Promise.race([parseRequest(recipeURL), timeout(REQUEST_TIMEOUT_S)]);
     const { recipe } = data.data;
+    const isBookmarked = state.bookmarks.some(bookmarkedRecipe => bookmarkedRecipe.id === recipe.id);
     state.recipe = {
       id: recipe.id,
       title: recipe.title,
@@ -22,6 +24,7 @@ export async function loadRecipe(recipeURL) {
       servings: recipe.servings,
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
+      bookmarked: isBookmarked,
     };
   } catch (error) {
     throw error;
@@ -38,6 +41,7 @@ export async function fetchSearchResults(searchQuery) {
       publisher: recipe.publisher,
       image: recipe.image_url,
     }));
+    search.currentPage = INITIAL_PAGE;
   } catch (error) {
     throw error;
   }
@@ -60,6 +64,20 @@ export function updateServingsTo(servings) {
     ingredient.quantity = (servings / recipe.servings) * ingredient.quantity;
   });
   recipe.servings = servings;
+}
+export function addBookmark(recipe) {
+  const { bookmarks } = state;
+  if (!bookmarks.length || !bookmarks.some(bookmark => bookmark.id === recipe.id)) {
+    bookmarks.push(recipe);
+    state.recipe.bookmarked = true;
+  }
+}
+export function removeBookmark(recipe) {
+  const { bookmarks } = state;
+  const startIndex = bookmarks.findIndex(bookmark => bookmark.id === recipe.id);
+  const DELETE_COUNT = 1;
+  bookmarks.splice(startIndex, DELETE_COUNT);
+  state.recipe.isBookmarked = false;
 }
 
 import { INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';

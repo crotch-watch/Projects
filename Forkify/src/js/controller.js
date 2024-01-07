@@ -2,7 +2,9 @@ init();
 
 function init() {
   recipeView.setSubscriber(controlRecipe);
-  recipeView.setUpdateServingsSubscriber(controlServings)
+  recipeView.setUpdateServingsSubscriber(controlServings);
+  recipeView.setAddBookmarkSubscriber(controlAddBookmark);
+  recipeView.setRemoveBookmarkSubscriber(controlRemoveBookmark);
   searchView.setSubscriber(controlSearchResults);
   paginationView.setSubscriber(controlPagination);
 }
@@ -11,7 +13,7 @@ async function controlRecipe() {
   const recipeID = window.location.hash.slice(1);
   if (!recipeID) return;
   recipeView.renderLoadingSpinner();
-  resultsView.update(model.getPaginatedResults())
+  resultsView.update(model.getPaginatedResults());
   const baseURL = getURL(API_URL);
   const recipeURL = baseURL(recipeID);
   try {
@@ -40,11 +42,19 @@ function controlPagination(page) {
   paginationView.render(model.state.search);
 }
 function controlServings(servings) {
-  model.updateServingsTo(servings)
-  recipeView.update(model.state.recipe)
-
+  model.updateServingsTo(servings);
+  recipeView.update(model.state.recipe);
 }
-
+function controlAddBookmark() {
+  const { recipe } = model.state;
+  model.addBookmark(recipe);
+  recipeView.update(recipe);
+}
+function controlRemoveBookmark() {
+  const { recipe } = model.state;
+  model.removeBookmark(recipe);
+  recipeView.update(recipe);
+}
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
 import { API_URL } from './config.js';
