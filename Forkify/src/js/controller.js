@@ -1,6 +1,7 @@
 init();
 
 function init() {
+  bookmarksView.setWindowLoadSub(preloadBookmarks);
   recipeView.setSubscriber(controlRecipe);
   recipeView.setUpdateServingsSubscriber(controlServings);
   recipeView.setBookmarkSubscriber(controlBookmark);
@@ -33,7 +34,6 @@ async function controlSearchResults() {
     resultsView.render(searchResults);
     paginationView.render(model.state.search);
   } catch (error) {
-    console.log(error);
     resultsView.renderErrorMessage(error.message);
   }
 }
@@ -52,6 +52,9 @@ function controlBookmark() {
   else model.removeBookmark(recipe);
   recipeView.update(recipe);
   bookmarksView.render(bookmarks);
+}
+function preloadBookmarks() {
+  bookmarksView.render(model.state.bookmarks);
 }
 
 import recipeView from './views/recipeView.js';

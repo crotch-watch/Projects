@@ -10,6 +10,13 @@ export const state = {
   bookmarks: [],
 };
 
+init();
+
+function init() {
+  const persistentData = localStorage.getItem('bookmarks');
+  if (persistentData) state.bookmarks = JSON.parse(persistentData);
+}
+
 export async function loadRecipe(recipeURL) {
   try {
     const data = await Promise.race([parseRequest(recipeURL), timeout(REQUEST_TIMEOUT_S)]);
@@ -71,6 +78,7 @@ export function addBookmark(recipe) {
   if (!bookmarks.length || !bookmarks.some(bookmark => bookmark.id === recipe.id)) {
     bookmarks.push(recipe);
     state.recipe.bookmarked = true;
+    persistBookmarks();
   }
 }
 export function removeBookmark(recipe) {
@@ -79,6 +87,10 @@ export function removeBookmark(recipe) {
   const DELETE_COUNT = 1;
   bookmarks.splice(startIndex, DELETE_COUNT);
   state.recipe.Bookmarked = false;
+  persistBookmarks();
+}
+export function persistBookmarks() {
+  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
 }
 
 import { INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
