@@ -13,19 +13,11 @@ class RecipeView extends View {
       UpdateServingsSubscriber(+updateServingsTo);
     });
   }
-  setAddBookmarkSubscriber(addBookmarkSubscriber) {
+  setBookmarkSubscriber(bookmarkSubscriber) {
     this._parent.addEventListener('click', clickEvent => {
       const bookmarkButton = clickEvent.target.closest('.btn--bookmark');
       if (!bookmarkButton) return;
-      addBookmarkSubscriber();
-    });
-  }
-  setRemoveBookmarkSubscriber() {
-    this._parent.addEventListener('click', clickEvent => {
-      const bookmarkButton = clickEvent.target.closest('.btn--bookmark');
-      
-      if (!bookmarkButton) return;
-      addBookmarkSubscriber();
+      bookmarkSubscriber();
     });
   }
   _generateMarkup() {
@@ -68,9 +60,9 @@ class RecipeView extends View {
 
       <div class="recipe__user-generated">
       </div>
-      <button class="btn--round btn--bookmark">
+      <button class="btn--round btn--bookmark${this._data.bookmarked ? '-fill' : ''}">
         <svg class="">
-          <use href="${View.icons}#icon-bookmark"></use>
+          <use href="${View.icons}#icon-bookmark${this._data.bookmarked ? '-fill' : ''}"></use>
         </svg>
       </button>
     </div>

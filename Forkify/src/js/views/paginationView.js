@@ -35,7 +35,7 @@ class PaginationView extends View {
         break;
     }
     return `
-      <button data-redirectToPage=${currentPage} class="btn--inline pagination__btn--${classNameSuffix}">
+      <button data-redirect-to-page=${currentPage} class="btn--inline pagination__btn--${classNameSuffix}">
         ${
           isPreviousButton
             ? `<svg class="search__icon">

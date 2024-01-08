@@ -11,15 +11,15 @@ export default class View {
   `;
   _DEFAULT_ERROR_MESSAGE = 'No recipes found for your query. Please try again!';
   _MESSAGE = '';
-  render(data) {
+  render(data, render = true) {
     if (!data || (Array.isArray(data) && !data.length)) throw new Error(this._DEFAULT_ERROR_MESSAGE);
     this._data = data;
-    this._clearMarkup();
     const markup = this._generateMarkup();
+    if (!render) return markup;
+    this._clearMarkup();
     this._parent.insertAdjacentHTML('afterbegin', markup);
   }
   update(data) {
-    if (!this._data.length) return;
     this._data = data;
     const newMarkup = this._generateMarkup();
     const newElement = document.createRange().createContextualFragment(newMarkup);
@@ -28,12 +28,12 @@ export default class View {
     newElementSubElements.forEach((subElement, index) => {
       const currentSubElement = currentElement[index];
       const areNodesEqual = subElement.isEqualNode(currentSubElement);
-      if (!areNodesEqual && subElement.firstChild().nodeValue.trim() !== '') {
+      if (!areNodesEqual && subElement.firstChild?.nodeValue.trim() !== '') {
         currentSubElement.textContent = subElement.textContent;
       }
       if (!areNodesEqual) {
         Array.from(subElement.attributes).forEach(attribute =>
-          currentSubElement.setAttributes(attribute.name, attribute.value)
+          currentSubElement.setAttribute(attribute.name, attribute.value)
         );
       }
     });

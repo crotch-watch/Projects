@@ -32,10 +32,11 @@ export async function loadRecipe(recipeURL) {
 }
 export async function fetchSearchResults(searchQuery) {
   try {
-    state.search.query = searchQuery;
+    const { search } = state;
+    search.query = searchQuery;
     const data = await parseRequest(`https://forkify-api.herokuapp.com/api/v2/recipes?search=${searchQuery}`);
     const { recipes } = data.data;
-    state.search.results = recipes.map(recipe => ({
+    search.results = recipes.map(recipe => ({
       id: recipe.id,
       title: recipe.title,
       publisher: recipe.publisher,
@@ -77,7 +78,7 @@ export function removeBookmark(recipe) {
   const startIndex = bookmarks.findIndex(bookmark => bookmark.id === recipe.id);
   const DELETE_COUNT = 1;
   bookmarks.splice(startIndex, DELETE_COUNT);
-  state.recipe.isBookmarked = false;
+  state.recipe.Bookmarked = false;
 }
 
 import { INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';

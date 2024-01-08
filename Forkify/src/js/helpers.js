@@ -1,3 +1,5 @@
+import resultsView from './views/resultsView';
+
 export async function parseRequest(url) {
   try {
     const res = await fetch(url);
