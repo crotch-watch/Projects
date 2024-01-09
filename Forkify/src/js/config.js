@@ -3,3 +3,4 @@ export const REQUEST_TIMEOUT_S = 10;
 export const RESULTS_PER_PAGE = 10;
 export const INITIAL_PAGE = 1;
 export const INITIAL_TOTAL_PAGES = 1;
+export const API_KEY = '80d2d969-420c-4728-8a3d-9dd5c1b50974';

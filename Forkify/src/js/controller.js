@@ -59,8 +59,12 @@ function controlBookmark() {
 function preloadBookmarks() {
   bookmarksView.render(model.state.bookmarks);
 }
-function controlRecipeSubmit(recipe) {
-  // model.state.search;
+async function controlRecipeSubmit(recipe) {
+  try {
+    await model.uploadRecipe(recipe);
+  } catch (error) {
+    addRecipeView.renderErrorMessage(error.message);
+  }
 }
 
 import recipeView from './views/recipeView.js';

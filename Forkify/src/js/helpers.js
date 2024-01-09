@@ -1,9 +1,23 @@
-import resultsView from './views/resultsView';
-
 export async function parseRequest(url) {
   try {
     const res = await fetch(url);
     const data = await res.json();
+    if (!res.ok) throw new Error(`\n ${data.message} (${res.status})`);
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+export async function sendRequest(url, payload) {
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = res.json();
     if (!res.ok) throw new Error(`\n ${data.message} (${res.status})`);
     return data;
   } catch (error) {

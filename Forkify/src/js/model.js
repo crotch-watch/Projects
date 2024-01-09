@@ -92,6 +92,40 @@ export function removeBookmark(recipe) {
 export function persistBookmarks() {
   localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
 }
+export async function uploadRecipe(recipe) {
+  try {
+    const ingredients = Object.entries(recipe)
+      .filter(entry => {
+        const [key, value] = entry;
+        if (key.startsWith('ingredient') && value) return true;
+        return false;
+      })
+      .map(([key, value]) => {
+        const ingredientInfo = value.replaceAll(' ', '').split(',');
+        if (ingredientInfo.length !== 3) throw new Error('Please insert 3 values separated with a comma :)');
+        let [quantity, unit, description] = value.replaceAll(' ', '').split(',');
+        quantity = parseFloat(quantity);
+        if (!Number.isFinite(quantity)) throw new Error('Quantity must be a number :)');
+        return { quantity: quantity ? quantity : null, unit, description };
+      });
+    const recipeToUpload = {
+      title: recipe.title,
+      source_url: recipe.sourceURL,
+      image_url: recipe.image,
+      publisher: recipe.publisher,
+      cooking_time: +recipe.cookingTime,
+      servings: +recipe.servings,
+      ingredients,
+    };
+    const baseURL = getURL(API_URL);
+    const keyQueryParam = getURL('')('?key=');
+    const apiKeyURL = baseURL(keyQueryParam);
 
-import { INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
-import { parseRequest, timeout } from './helpers';
+    const data = sendRequest(apiKeyURL, recipeToUpload);
+  } catch (error) {
+    throw error;
+  }
+}
+
+import { API_KEY, API_URL, INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
+import { getURL, parseRequest, sendRequest, timeout } from './helpers';
