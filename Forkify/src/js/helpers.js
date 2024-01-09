@@ -27,3 +27,8 @@ export function getURL(URL) {
     return URL + extension;
   };
 }
+export function bindCallbacks(...callbacks) {
+  return function (...args) {
+    callbacks.forEach(callback => args.forEach(arg => callback(arg)));
+  };
+}

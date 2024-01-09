@@ -7,6 +7,9 @@ function init() {
   recipeView.setBookmarkSubscriber(controlBookmark);
   searchView.setSubscriber(controlSearchResults);
   paginationView.setSubscriber(controlPagination);
+  addRecipeView.setClickAddRecipeSub();
+  addRecipeView.setFormCloseSub();
+  addRecipeView.setFormSubmitSub(controlRecipeSubmit);
 }
 
 async function controlRecipe() {
@@ -56,6 +59,9 @@ function controlBookmark() {
 function preloadBookmarks() {
   bookmarksView.render(model.state.bookmarks);
 }
+function controlRecipeSubmit(recipe) {
+  // model.state.search;
+}
 
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
@@ -65,6 +71,7 @@ import * as model from './model.js';
 import resultsView from './views/resultsView.js';
 import paginationView from './views/paginationView.js';
 import bookmarksView from './views/bookmarksView.js';
+import addRecipeView from './views/addRecipeView.js';
 
 if (module.hot) {
   module.hot.accept();
