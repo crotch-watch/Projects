@@ -46,3 +46,14 @@ export function bindCallbacks(...callbacks) {
     callbacks.forEach(callback => args.forEach(arg => callback(arg)));
   };
 }
+export function createRecipeObject(recipe) {
+  return {
+    title: recipe.title,
+    source_url: recipe.sourceURL,
+    image_url: recipe.image,
+    publisher: recipe.publisher,
+    cooking_time: +recipe.cookingTime,
+    servings: +recipe.servings,
+    ingredients,
+  };
+}

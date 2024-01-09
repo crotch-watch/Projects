@@ -21,18 +21,9 @@ export async function loadRecipe(recipeURL) {
   try {
     const data = await Promise.race([parseRequest(recipeURL), timeout(REQUEST_TIMEOUT_S)]);
     const { recipe } = data.data;
+    state.recipe = createRecipeObject(recipe);
     const isBookmarked = state.bookmarks.some(bookmarkedRecipe => bookmarkedRecipe.id === recipe.id);
-    state.recipe = {
-      id: recipe.id,
-      title: recipe.title,
-      publisher: recipe.publisher,
-      sourceURL: recipe.source_url,
-      image: recipe.image_url,
-      servings: recipe.servings,
-      cookingTime: recipe.cooking_time,
-      ingredients: recipe.ingredients,
-      bookmarked: isBookmarked,
-    };
+    state.recipe.bookmarked = isBookmarked;
   } catch (error) {
     throw error;
   }
@@ -103,29 +94,21 @@ export async function uploadRecipe(recipe) {
       .map(([key, value]) => {
         const ingredientInfo = value.replaceAll(' ', '').split(',');
         if (ingredientInfo.length !== 3) throw new Error('Please insert 3 values separated with a comma :)');
-        let [quantity, unit, description] = value.replaceAll(' ', '').split(',');
+        let [quantity, unit, description] = ingredientInfo;
         quantity = parseFloat(quantity);
         if (!Number.isFinite(quantity)) throw new Error('Quantity must be a number :)');
         return { quantity: quantity ? quantity : null, unit, description };
       });
-    const recipeToUpload = {
-      title: recipe.title,
-      source_url: recipe.sourceURL,
-      image_url: recipe.image,
-      publisher: recipe.publisher,
-      cooking_time: +recipe.cookingTime,
-      servings: +recipe.servings,
-      ingredients,
-    };
-    const baseURL = getURL(API_URL);
-    const keyQueryParam = getURL('')('?key=');
-    const apiKeyURL = baseURL(keyQueryParam);
-
-    const data = sendRequest(apiKeyURL, recipeToUpload);
+    const recipeToUpload = createRecipeObject(recipe);
+    const apiKeyURL = API_URL + '?key=' + API_KEY;
+    const data = await sendRequest(apiKeyURL, recipeToUpload);
+    const { recipe: uploadedRecipe } = data.data;
+    state.recipe = createRecipeObject(uploadedRecipe);
+    addBookmark(state.recipe);
   } catch (error) {
     throw error;
   }
 }
 
 import { API_KEY, API_URL, INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
-import { getURL, parseRequest, sendRequest, timeout } from './helpers';
+import { createRecipeObject, parseRequest, sendRequest, timeout } from './helpers';

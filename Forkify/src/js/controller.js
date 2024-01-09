@@ -62,6 +62,10 @@ function preloadBookmarks() {
 async function controlRecipeSubmit(recipe) {
   try {
     await model.uploadRecipe(recipe);
+    setTimeout(addRecipeView.toggleWindow, SUCCESS_MODAL_S);
+    addRecipeView.renderMessage();
+    recipeView.render(model.state);
+    addRecipeView.toggleWindow();
   } catch (error) {
     addRecipeView.renderErrorMessage(error.message);
   }
@@ -69,7 +73,7 @@ async function controlRecipeSubmit(recipe) {
 
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
-import { API_URL } from './config.js';
+import { API_URL, SUCCESS_MODAL_S } from './config.js';
 import { getURL } from './helpers.js';
 import * as model from './model.js';
 import resultsView from './views/resultsView.js';
