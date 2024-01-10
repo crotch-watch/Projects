@@ -1,3 +1,8 @@
+/**
+ * @function ResultsView
+ * @memberof View 
+ */
+
 class ResultsView extends View {
   _parent = document.querySelector('ul.results');
   _generateMarkup() {

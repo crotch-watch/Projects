@@ -11,6 +11,12 @@ export default class View {
   `;
   _DEFAULT_ERROR_MESSAGE = 'No recipes found for your query. Please try again!';
   _MESSAGE = '';
+  /**
+   * Render the received data on DOM.
+   * @param {Object | Object[]} data  takes a recipe or array of recipes
+   * @param {boolean} [render = true] if render is true renders data on DOM. if false, returns markup string of  data.
+   * @returns {undefined | string} if render is false return markup string
+   */
   render(data, render = true) {
     if (!data || (Array.isArray(data) && !data.length)) throw new Error(this._DEFAULT_ERROR_MESSAGE);
     this._data = data;
@@ -19,6 +25,10 @@ export default class View {
     this._clearMarkup();
     this._parent.insertAdjacentHTML('afterbegin', markup);
   }
+  /**
+   * when view already exists on DOM we can compare which values have been changed and then only render the change
+   * @param {Object | Object[]} data 
+   */
   update(data) {
     this._data = data;
     const newMarkup = this._generateMarkup();

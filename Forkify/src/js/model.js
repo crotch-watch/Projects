@@ -19,7 +19,7 @@ function init() {
 
 export async function loadRecipe(recipeURL) {
   try {
-    const data = await Promise.race([parseRequest(recipeURL), timeout(REQUEST_TIMEOUT_S)]);
+    const data = await Promise.race([AJAX(recipeURL + '?key=' + API_KEY), timeout(REQUEST_TIMEOUT_S)]);
     const { recipe } = data.data;
     state.recipe = createRecipeObject(recipe);
     const isBookmarked = state.bookmarks.some(bookmarkedRecipe => bookmarkedRecipe.id === recipe.id);
@@ -32,13 +32,14 @@ export async function fetchSearchResults(searchQuery) {
   try {
     const { search } = state;
     search.query = searchQuery;
-    const data = await parseRequest(`https://forkify-api.herokuapp.com/api/v2/recipes?search=${searchQuery}`);
+    const data = await AJAX(`https://forkify-api.herokuapp.com/api/v2/recipes?search=${searchQuery}&key=${API_KEY}`);
     const { recipes } = data.data;
     search.results = recipes.map(recipe => ({
       id: recipe.id,
       title: recipe.title,
       publisher: recipe.publisher,
       image: recipe.image_url,
+      key: recipe.key,
     }));
     search.currentPage = INITIAL_PAGE;
   } catch (error) {
@@ -92,7 +93,7 @@ export async function uploadRecipe(recipe) {
         return false;
       })
       .map(([key, value]) => {
-        const ingredientInfo = value.replaceAll(' ', '').split(',');
+        const ingredientInfo = value.split(',').map(info => info.trim());
         if (ingredientInfo.length !== 3) throw new Error('Please insert 3 values separated with a comma :)');
         let [quantity, unit, description] = ingredientInfo;
         quantity = parseFloat(quantity);
@@ -109,7 +110,7 @@ export async function uploadRecipe(recipe) {
       ingredients,
     };
     const apiKeyURL = API_URL + '?key=' + API_KEY;
-    const data = await sendRequest(apiKeyURL, recipeToUpload);
+    const data = await AJAX(apiKeyURL, recipeToUpload);
     const { recipe: uploadedRecipe } = data.data;
     state.recipe = createRecipeObject(uploadedRecipe);
     addBookmark(state.recipe);
@@ -119,4 +120,4 @@ export async function uploadRecipe(recipe) {
 }
 
 import { API_KEY, API_URL, INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
-import { createRecipeObject, parseRequest, sendRequest, timeout } from './helpers';
+import { AJAX, createRecipeObject, timeout } from './helpers';

@@ -4,7 +4,7 @@ class AddRecipe extends View {
   _overlay = document.querySelector('.overlay');
   _openButton = document.querySelector('button.nav__btn--add-recipe');
   _closeButton = document.querySelector('button.btn--close-modal');
-  _MESSAGE = 'Recipe uploaded successfully';
+  _MESSAGE = 'Recipe uploaded successfully ;)';
   setClickAddRecipeSub() {
     this._openButton.addEventListener('click', this.toggleWindow.bind(this));
   }

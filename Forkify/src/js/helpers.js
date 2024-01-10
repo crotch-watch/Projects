@@ -1,23 +1,7 @@
-export async function parseRequest(url) {
+export async function AJAX(resource, options) {
   try {
-    const res = await fetch(url);
+    const res = await fetch(resource, options);
     const data = await res.json();
-    if (!res.ok) throw new Error(`\n ${data.message} (${res.status})`);
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
-export async function sendRequest(url, payload) {
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = res.json();
     if (!res.ok) throw new Error(`\n ${data.message} (${res.status})`);
     return data;
   } catch (error) {
@@ -56,5 +40,6 @@ export function createRecipeObject(recipe) {
     servings: +recipe.servings,
     ingredients: recipe.ingredients,
     id: recipe.id,
+    key: recipe.key,
   };
 }

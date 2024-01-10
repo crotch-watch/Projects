@@ -63,9 +63,12 @@ async function controlRecipeSubmit(recipe) {
   try {
     await model.uploadRecipe(recipe);
     addRecipeView.renderMessage();
-    setTimeout(() => addRecipeView.toggleWindow(), SUCCESS_MODAL_S);
-    bookmarksView.render(model.state.bookmarks)
+    setTimeout(() => {
+      addRecipeView.toggleWindow();
+    }, SUCCESS_MODAL_S);
+    window.history.pushState(null, '', `#${model.state.recipe.id}`);
     recipeView.render(model.state.recipe);
+    bookmarksView.render(model.state.bookmarks);
   } catch (error) {
     addRecipeView.renderErrorMessage(error.message);
   }
