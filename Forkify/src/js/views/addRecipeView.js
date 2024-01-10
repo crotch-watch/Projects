@@ -7,7 +7,6 @@ class AddRecipe extends View {
   _MESSAGE = 'Recipe uploaded successfully';
   setClickAddRecipeSub() {
     this._openButton.addEventListener('click', this.toggleWindow.bind(this));
-    console.log(this._parent);
   }
   setFormSubmitSub(formSubmitSub) {
     this._parent.addEventListener('submit', submitEvent => {

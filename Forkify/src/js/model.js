@@ -99,7 +99,15 @@ export async function uploadRecipe(recipe) {
         if (!Number.isFinite(quantity)) throw new Error('Quantity must be a number :)');
         return { quantity: quantity ? quantity : null, unit, description };
       });
-    const recipeToUpload = createRecipeObject(recipe);
+    const recipeToUpload = {
+      title: recipe.title,
+      source_url: recipe.sourceURL,
+      image_url: recipe.image,
+      publisher: recipe.publisher,
+      cooking_time: recipe.cookingTime,
+      servings: recipe.servings,
+      ingredients,
+    };
     const apiKeyURL = API_URL + '?key=' + API_KEY;
     const data = await sendRequest(apiKeyURL, recipeToUpload);
     const { recipe: uploadedRecipe } = data.data;

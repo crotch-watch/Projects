@@ -49,11 +49,12 @@ export function bindCallbacks(...callbacks) {
 export function createRecipeObject(recipe) {
   return {
     title: recipe.title,
-    source_url: recipe.sourceURL,
-    image_url: recipe.image,
+    sourceURL: recipe.source_url,
+    image: recipe.image_url,
     publisher: recipe.publisher,
-    cooking_time: +recipe.cookingTime,
+    cookingTime: +recipe.cooking_time,
     servings: +recipe.servings,
-    ingredients,
+    ingredients: recipe.ingredients,
+    id: recipe.id,
   };
 }

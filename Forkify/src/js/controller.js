@@ -62,10 +62,10 @@ function preloadBookmarks() {
 async function controlRecipeSubmit(recipe) {
   try {
     await model.uploadRecipe(recipe);
-    setTimeout(addRecipeView.toggleWindow, SUCCESS_MODAL_S);
     addRecipeView.renderMessage();
-    recipeView.render(model.state);
-    addRecipeView.toggleWindow();
+    setTimeout(() => addRecipeView.toggleWindow(), SUCCESS_MODAL_S);
+    bookmarksView.render(model.state.bookmarks)
+    recipeView.render(model.state.recipe);
   } catch (error) {
     addRecipeView.renderErrorMessage(error.message);
   }
