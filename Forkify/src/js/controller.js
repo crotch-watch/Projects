@@ -17,11 +17,9 @@ async function controlRecipe() {
   if (!recipeID) return;
   recipeView.renderLoadingSpinner();
   resultsView.update(model.getPaginatedResults());
-  const baseURL = getURL(API_URL);
-  const recipeURL = baseURL(recipeID);
   bookmarksView.update(model.state.bookmarks);
   try {
-    await model.loadRecipe(recipeURL);
+    await model.loadRecipe(recipeID);
     recipeView.render(model.state.recipe);
   } catch (error) {
     recipeView.renderErrorMessage();

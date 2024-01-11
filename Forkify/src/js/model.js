@@ -10,18 +10,58 @@ export const state = {
   bookmarks: [],
 };
 
+/**
+ * @todo check if export is required
+ */
+export const globalCache = {
+  cache: { recipe: {}, recentSearches: [] },
+};
+
 init();
 
 function init() {
   const persistentData = localStorage.getItem('bookmarks');
   if (persistentData) state.bookmarks = JSON.parse(persistentData);
+  initCache();
+  clearCache();
 }
 
-export async function loadRecipe(recipeURL) {
+/**
+ * @todo make this into a generic function.
+ */
+function initCache() {
+  const cache = localStorage.getItem(CACHE_KEY);
+  if (cache) {
+    globalCache.cache = JSON.parse(cache);
+    return;
+  }
+  localStorage.setItem(CACHE_KEY, JSON.stringify(globalCache.cache));
+}
+/**
+ * @todo make this into a generic function.
+ */
+function clearCache() {
+  setTimeout(() => {
+    localStorage.removeItem(CACHE_KEY);
+  }, CACHE_CLEAR_INTERVAL);
+}
+export async function loadRecipe(recipeID) {
+  const { cache } = globalCache;
+  const { recipe } = cache;
+  const cachedRecipe = recipe.id && recipe.id === recipeID;
+  if (cachedRecipe) {
+    state.recipe = recipe;
+    return;
+  }
+  const baseURL = getURL(API_URL);
+  const recipeURL = baseURL(recipeID);
   try {
     const data = await Promise.race([AJAX(recipeURL + '?key=' + API_KEY), timeout(REQUEST_TIMEOUT_S)]);
     const { recipe } = data.data;
-    state.recipe = createRecipeObject(recipe);
+    const formattedRecipe = createRecipeObject(recipe);
+    state.recipe = formattedRecipe;
+    cache.recipe = formattedRecipe;
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
     const isBookmarked = state.bookmarks.some(bookmarkedRecipe => bookmarkedRecipe.id === recipe.id);
     state.recipe.bookmarked = isBookmarked;
   } catch (error) {
@@ -29,8 +69,14 @@ export async function loadRecipe(recipeURL) {
   }
 }
 export async function fetchSearchResults(searchQuery) {
+  const cachedResults = globalCache.cache.results;
+  const { search } = state;
+  if (cachedResults.length) {
+    search.results = cachedResults;
+    search.currentPage = INITIAL_PAGE;
+    return;
+  }
   try {
-    const { search } = state;
     search.query = searchQuery;
     const data = await AJAX(`https://forkify-api.herokuapp.com/api/v2/recipes?search=${searchQuery}&key=${API_KEY}`);
     const { recipes } = data.data;
@@ -41,10 +87,16 @@ export async function fetchSearchResults(searchQuery) {
       image: recipe.image_url,
       key: recipe.key,
     }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify());
     search.currentPage = INITIAL_PAGE;
   } catch (error) {
     throw error;
   }
+}
+function cacheRecentSearches(searchQuery, result) {
+  /**
+   * @todo finish this
+   */
 }
 export function getPaginatedResults(page = state.search.currentPage) {
   if (!Number.isFinite(page) || page < INITIAL_PAGE) return;
@@ -126,5 +178,18 @@ export async function uploadRecipe(recipe) {
   }
 }
 
-import { API_KEY, API_URL, INITIAL_PAGE, INITIAL_TOTAL_PAGES, REQUEST_TIMEOUT_S, RESULTS_PER_PAGE } from './config';
-import { AJAX, createRecipeObject, timeout } from './helpers';
+import {
+  API_KEY,
+  API_URL,
+  CACHE_CLEAR_INTERVAL,
+  CACHE_KEY,
+  INITIAL_PAGE,
+  INITIAL_TOTAL_PAGES,
+  REQUEST_TIMEOUT_S,
+  RESULTS_PER_PAGE,
+} from './config';
+import { AJAX, createRecipeObject, getURL, timeout } from './helpers';
+
+// areas where caching may be useful
+// API call
+// loadRecipe checks in cache and if required data is absent then make a network request.
