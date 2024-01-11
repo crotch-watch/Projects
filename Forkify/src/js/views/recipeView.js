@@ -6,7 +6,7 @@ class RecipeView extends View {
   }
   setUpdateServingsSubscriber(UpdateServingsSubscriber) {
     this._parent.addEventListener('click', clickEvent => {
-      const updateServingButton = clickEvent.target.closest('.btn--update--servings');
+      const updateServingButton = clickEvent.target.closest('.btn--update-servings');
       if (!updateServingButton) return;
       const { updateServingsTo } = updateServingButton.dataset;
       if (+updateServingsTo <= 0) return;
@@ -45,12 +45,12 @@ class RecipeView extends View {
         <span class="recipe__info-text">servings</span>
 
         <div class="recipe__info-buttons">
-          <button class="btn--tiny btn--update-servings data-updateServingsTo=${this._data.servings - 1}">
+          <button class="btn--tiny btn--update-servings" data-update-servings-to=${this._data.servings - 1}>
             <svg>
               <use href="${View.icons}#icon-minus-circle"></use>
             </svg>
           </button>
-          <button class="btn--tiny btn--increase-servings data-updateServingsTo=${this._data.servings + 1}">
+          <button class="btn--tiny btn--update-servings" data-update-servings-to=${this._data.servings + 1}>
             <svg>
               <use href="${View.icons}#icon-plus-circle"></use>
             </svg>
@@ -62,7 +62,7 @@ class RecipeView extends View {
           <use href="${View.icons}#icon-user"></use>
         </svg>
       </div>
-      <button class="btn--round btn--bookmark${this._data.bookmarked ? '-fill' : ''}">
+      <button class="btn--round btn--bookmark">
         <svg class="">
           <use href="${View.icons}#icon-bookmark${this._data.bookmarked ? '-fill' : ''}"></use>
         </svg>

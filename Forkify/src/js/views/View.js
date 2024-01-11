@@ -27,7 +27,7 @@ export default class View {
   }
   /**
    * when view already exists on DOM we can compare which values have been changed and then only render the change
-   * @param {Object | Object[]} data 
+   * @param {Object | Object[]} data
    */
   update(data) {
     this._data = data;
@@ -42,9 +42,9 @@ export default class View {
         currentSubElement.textContent = subElement.textContent;
       }
       if (!areNodesEqual) {
-        Array.from(subElement.attributes).forEach(attribute =>
-          currentSubElement.setAttribute(attribute.name, attribute.value)
-        );
+        Array.from(subElement.attributes).forEach(attribute => {
+          currentSubElement.setAttribute(attribute.name, attribute.value);
+        });
       }
     });
   }

@@ -53,11 +53,19 @@ function controlBookmark() {
   const { recipe, bookmarks } = model.state;
   if (!recipe.bookmarked) model.addBookmark(recipe);
   else model.removeBookmark(recipe);
-  recipeView.update(recipe);
-  bookmarksView.render(bookmarks);
+  recipeView.update(model.state.recipe);
+  try {
+    bookmarksView.render(bookmarks);
+  } catch (error) {
+    bookmarksView.renderErrorMessage();
+  }
 }
 function preloadBookmarks() {
-  bookmarksView.render(model.state.bookmarks);
+  try {
+    bookmarksView.render(model.state.bookmarks);
+  } catch (error) {
+    bookmarksView.renderErrorMessage();
+  }
 }
 async function controlRecipeSubmit(recipe) {
   try {
@@ -76,8 +84,8 @@ async function controlRecipeSubmit(recipe) {
 
 import recipeView from './views/recipeView.js';
 import searchView from './views/searchView.js';
-import { API_URL, SUCCESS_MODAL_S } from './config.js';
-import { getURL } from './helpers.js';
+import { API_KEY, API_URL, SUCCESS_MODAL_S } from './config.js';
+import { AJAX, getURL } from './helpers.js';
 import * as model from './model.js';
 import resultsView from './views/resultsView.js';
 import paginationView from './views/paginationView.js';

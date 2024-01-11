@@ -61,7 +61,7 @@ export function getPaginatedResults(page = state.search.currentPage) {
 export function updateServingsTo(servings) {
   const { recipe } = state;
   recipe.ingredients.forEach(ingredient => {
-    ingredient.quantity = (servings / recipe.servings) * ingredient.quantity;
+    ingredient.quantity = ((servings / recipe.servings) * ingredient.quantity).toFixed(2);
   });
   recipe.servings = servings;
 }
@@ -78,7 +78,7 @@ export function removeBookmark(recipe) {
   const startIndex = bookmarks.findIndex(bookmark => bookmark.id === recipe.id);
   const DELETE_COUNT = 1;
   bookmarks.splice(startIndex, DELETE_COUNT);
-  state.recipe.Bookmarked = false;
+  state.recipe.bookmarked = false;
   persistBookmarks();
 }
 export function persistBookmarks() {
@@ -110,7 +110,14 @@ export async function uploadRecipe(recipe) {
       ingredients,
     };
     const apiKeyURL = API_URL + '?key=' + API_KEY;
-    const data = await AJAX(apiKeyURL, recipeToUpload);
+    const options = {
+      body: JSON.stringify(recipeToUpload),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    const data = await AJAX(apiKeyURL, options);
     const { recipe: uploadedRecipe } = data.data;
     state.recipe = createRecipeObject(uploadedRecipe);
     addBookmark(state.recipe);
