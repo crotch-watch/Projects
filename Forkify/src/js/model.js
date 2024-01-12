@@ -10,7 +10,7 @@ export const state = {
   bookmarks: [],
 };
 const globalCache = {
-  cache: { [RECIPE_CACHE_KEY]: {}, [SEARCH_RESULTS_CACHE_KEY]: [] },
+  cache: { [RECIPE_CACHE_KEY]: [], [SEARCH_RESULTS_CACHE_KEY]: [] },
 };
 
 init();
@@ -20,21 +20,20 @@ function init() {
   if (persistentData) state.bookmarks = JSON.parse(persistentData);
   handleCaching();
 }
-
 function handleCaching() {
   const { cache } = globalCache;
   CACHE_KEYS.forEach(key => {
-    initCacheInstance(cache[key], key);
+    initCacheInstance(cache, key);
     clearCacheInstances(key);
   });
 }
 function initCacheInstance(cache, cacheKey) {
   const browserCache = localStorage.getItem(cacheKey);
   if (browserCache) {
-    cache = JSON.parse(browserCache);
+    cache[cacheKey] = JSON.parse(browserCache);
     return;
   }
-  localStorage.setItem(cacheKey, JSON.stringify(cache));
+  localStorage.setItem(cacheKey, JSON.stringify(cache[cacheKey]));
 }
 function clearCacheInstances(key) {
   setTimeout(() => {
@@ -43,10 +42,10 @@ function clearCacheInstances(key) {
 }
 export async function loadRecipe(recipeID) {
   const { cache } = globalCache;
-  const { recipe } = cache;
-  const cachedRecipe = recipe.id && recipe.id === recipeID;
+  const { recipes } = cache;
+  const cachedRecipe = checkCachedRecipe(recipes, recipeID);
   if (cachedRecipe) {
-    state.recipe = recipe;
+    state.recipe = cachedRecipe;
     return;
   }
   const baseURL = getURL(API_URL);
@@ -55,23 +54,32 @@ export async function loadRecipe(recipeID) {
     const data = await Promise.race([AJAX(recipeURL + '?key=' + API_KEY), timeout(REQUEST_TIMEOUT_S)]);
     const { recipe } = data.data;
     const formattedRecipe = createRecipeObject(recipe);
-    state.recipe = cache.recipe = formattedRecipe;
+    state.recipe = formattedRecipe;
     const isBookmarked = state.bookmarks.some(bookmarkedRecipe => bookmarkedRecipe.id === recipe.id);
-    state.recipe.bookmarked = recipe.isBookmarked = isBookmarked;
+    state.recipe.bookmarked = isBookmarked;
+    // adding to cache
+    recipes.push(formattedRecipe);
+    localStorage.setItem(RECIPE_CACHE_KEY, JSON.stringify(recipes));
   } catch (error) {
     throw error;
   }
+}
+function checkCachedRecipe(cachedRecipes, recipeID) {
+  // if user loads '/' we return;
+  const noRecipeID = !recipeID.trim();
+  if (noRecipeID) return;
+  if (!cachedRecipes.length) return;
+  const cachedRecipe = cachedRecipes.find(recipe => recipe.id === recipeID);
+  if (cachedRecipe) return cachedRecipe;
 }
 export async function fetchSearchResults(searchQuery) {
   try {
     const { search } = state;
     const { searchResults } = globalCache.cache;
-    if (searchResults.length) {
-      const cachedResult = searchResults.find(result => result.searchQuery === searchQuery.toLowerCase());
-      if (cachedResult) {
-        state.search.results = cachedResult;
-        return;
-      }
+    const cachedResults = checkCachedSearchResults(searchResults, searchQuery);
+    if (cachedResults) {
+      search.results = cachedResults;
+      return;
     }
     search.query = searchQuery;
     const data = await AJAX(`https://forkify-api.herokuapp.com/api/v2/recipes?search=${searchQuery}&key=${API_KEY}`);
@@ -91,10 +99,12 @@ export async function fetchSearchResults(searchQuery) {
     throw error;
   }
 }
-function cacheRecentSearches(searchQuery, result) {
-  /**
-   * @todo finish this
-   */
+
+function checkCachedSearchResults(cachedSearchResults, searchQuery) {
+  if (!cachedSearchResults.length) return;
+  const cachedResult = cachedSearchResults.find(result => result.searchQuery === searchQuery.toLowerCase());
+  if (!cachedResult) return;
+  return cachedResult.results;
 }
 export function getPaginatedResults(page = state.search.currentPage) {
   if (!Number.isFinite(page) || page < INITIAL_PAGE) return;
