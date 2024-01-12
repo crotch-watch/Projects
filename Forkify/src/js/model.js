@@ -9,12 +9,8 @@ export const state = {
   },
   bookmarks: [],
 };
-
-/**
- * @todo check if export is required
- */
-export const globalCache = {
-  cache: { recipe: {}, recentSearches: [] },
+const globalCache = {
+  cache: { [RECIPE_CACHE_KEY]: {}, [SEARCH_RESULTS_CACHE_KEY]: [] },
 };
 
 init();
@@ -22,27 +18,27 @@ init();
 function init() {
   const persistentData = localStorage.getItem('bookmarks');
   if (persistentData) state.bookmarks = JSON.parse(persistentData);
-  initCache();
-  clearCache();
+  handleCaching();
 }
 
-/**
- * @todo make this into a generic function.
- */
-function initCache() {
-  const cache = localStorage.getItem(CACHE_KEY);
-  if (cache) {
-    globalCache.cache = JSON.parse(cache);
+function handleCaching() {
+  const { cache } = globalCache;
+  CACHE_KEYS.forEach(key => {
+    initCacheInstance(cache[key], key);
+    clearCacheInstances(key);
+  });
+}
+function initCacheInstance(cache, cacheKey) {
+  const browserCache = localStorage.getItem(cacheKey);
+  if (browserCache) {
+    cache = JSON.parse(browserCache);
     return;
   }
-  localStorage.setItem(CACHE_KEY, JSON.stringify(globalCache.cache));
+  localStorage.setItem(cacheKey, JSON.stringify(cache));
 }
-/**
- * @todo make this into a generic function.
- */
-function clearCache() {
+function clearCacheInstances(key) {
   setTimeout(() => {
-    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(key);
   }, CACHE_CLEAR_INTERVAL);
 }
 export async function loadRecipe(recipeID) {
@@ -59,36 +55,38 @@ export async function loadRecipe(recipeID) {
     const data = await Promise.race([AJAX(recipeURL + '?key=' + API_KEY), timeout(REQUEST_TIMEOUT_S)]);
     const { recipe } = data.data;
     const formattedRecipe = createRecipeObject(recipe);
-    state.recipe = formattedRecipe;
-    cache.recipe = formattedRecipe;
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    state.recipe = cache.recipe = formattedRecipe;
     const isBookmarked = state.bookmarks.some(bookmarkedRecipe => bookmarkedRecipe.id === recipe.id);
-    state.recipe.bookmarked = isBookmarked;
+    state.recipe.bookmarked = recipe.isBookmarked = isBookmarked;
   } catch (error) {
     throw error;
   }
 }
 export async function fetchSearchResults(searchQuery) {
-  const cachedResults = globalCache.cache.results;
-  const { search } = state;
-  if (cachedResults.length) {
-    search.results = cachedResults;
-    search.currentPage = INITIAL_PAGE;
-    return;
-  }
   try {
+    const { search } = state;
+    const { searchResults } = globalCache.cache;
+    if (searchResults.length) {
+      const cachedResult = searchResults.find(result => result.searchQuery === searchQuery.toLowerCase());
+      if (cachedResult) {
+        state.search.results = cachedResult;
+        return;
+      }
+    }
     search.query = searchQuery;
     const data = await AJAX(`https://forkify-api.herokuapp.com/api/v2/recipes?search=${searchQuery}&key=${API_KEY}`);
     const { recipes } = data.data;
-    search.results = recipes.map(recipe => ({
+    const formattedResults = recipes.map(recipe => ({
       id: recipe.id,
       title: recipe.title,
       publisher: recipe.publisher,
       image: recipe.image_url,
       key: recipe.key,
     }));
-    localStorage.setItem(CACHE_KEY, JSON.stringify());
+    search.results = formattedResults;
     search.currentPage = INITIAL_PAGE;
+    searchResults.push({ searchQuery: searchQuery.toLowerCase(), results: formattedResults });
+    localStorage.setItem(SEARCH_RESULTS_CACHE_KEY, JSON.stringify(searchResults));
   } catch (error) {
     throw error;
   }
@@ -182,11 +180,13 @@ import {
   API_KEY,
   API_URL,
   CACHE_CLEAR_INTERVAL,
-  CACHE_KEY,
+  RECIPE_CACHE_KEY,
   INITIAL_PAGE,
   INITIAL_TOTAL_PAGES,
   REQUEST_TIMEOUT_S,
   RESULTS_PER_PAGE,
+  SEARCH_RESULTS_CACHE_KEY,
+  CACHE_KEYS,
 } from './config';
 import { AJAX, createRecipeObject, getURL, timeout } from './helpers';
 
