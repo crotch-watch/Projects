@@ -199,7 +199,3 @@ import {
   CACHE_KEYS,
 } from './config';
 import { AJAX, createRecipeObject, getURL, timeout } from './helpers';
-
-// areas where caching may be useful
-// API call
-// loadRecipe checks in cache and if required data is absent then make a network request.
